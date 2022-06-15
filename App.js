@@ -1,5 +1,5 @@
-import React from "react";
-import { Animated, TouchableOpacity } from "react-native";
+import React, { useRef, useState } from "react";
+import { Animated, Pressable } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -15,20 +15,29 @@ const Box = styled.View`
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
-  const Y = new Animated.Value(0);
+  const [isUp, setIsUp] = useState(false);
+  const Y_POSITION = useRef(new Animated.Value(300)).current;
+  const toggleUp = () => setIsUp((prev) => !prev);
   const moveUp = () => {
-    Animated.spring(Y, {
-      toValue: -200,
-      bounciness: 20,
+    Animated.timing(Y_POSITION, {
+      toValue: isUp ? 300 : -300,
       useNativeDriver: true,
-    }).start();
+    }).start(toggleUp);
   };
-  Y.addListener(() => console.log(Y));
+  const borderRadius = Y_POSITION.interpolate({
+    inputRange: [-300, 300],
+    outputRange: [100, 0],
+  });
   return (
     <Container>
-      <TouchableOpacity onPress={moveUp}>
-        <AnimatedBox style={{ transform: [{ translateY: Y }] }} />
-      </TouchableOpacity>
+      <Pressable onPress={moveUp}>
+        <AnimatedBox
+          style={{
+            transform: [{ translateY: Y_POSITION }],
+            borderRadius,
+          }}
+        />
+      </Pressable>
     </Container>
   );
 }
