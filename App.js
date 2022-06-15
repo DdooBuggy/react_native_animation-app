@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Animated, Dimensions, Pressable } from "react-native";
+import React, { useRef } from "react";
+import { Animated, PanResponder } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -12,56 +12,41 @@ const Box = styled.View`
   width: 200px;
   height: 200px;
 `;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
   const POSITION = useRef(
     new Animated.ValueXY({
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
+      x: 0,
+      y: 0,
     })
   ).current;
-  const topLeft = Animated.timing(POSITION, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
-    },
-    useNativeDriver: true,
-  });
-  const bottomLeft = Animated.timing(POSITION, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: SCREEN_HEIGHT / 2 - 100,
-    },
-    useNativeDriver: true,
-  });
-  const bottomRight = Animated.timing(POSITION, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: SCREEN_HEIGHT / 2 - 100,
-    },
-    useNativeDriver: true,
-  });
-  const topRight = Animated.timing(POSITION, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
-    },
-    useNativeDriver: true,
-  });
-  const circleAnimation = () => {
-    Animated.loop(
-      Animated.sequence([bottomLeft, bottomRight, topRight, topLeft])
-    ).start();
-  };
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        POSITION.setOffset({
+          x: POSITION.x._value,
+          y: POSITION.y._value,
+        });
+      },
+      onPanResponderMove: (_, { dx, dy }) => {
+        POSITION.setValue({
+          x: dx,
+          y: dy,
+        });
+      },
+      onPanResponderRelease: () => {
+        POSITION.flattenOffset();
+      },
+    })
+  ).current;
   return (
     <Container>
-      <Pressable onPress={circleAnimation}>
-        <AnimatedBox
-          style={{ transform: [...POSITION.getTranslateTransform()] }}
-        />
-      </Pressable>
+      <AnimatedBox
+        {...panResponder.panHandlers}
+        style={{ transform: POSITION.getTranslateTransform() }}
+      />
     </Container>
   );
 }
