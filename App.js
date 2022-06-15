@@ -66,10 +66,14 @@ export default function App() {
   const goLeft = Animated.spring(position, {
     toValue: -horizontalDistance,
     useNativeDriver: true,
+    restDisplacementThreshold: 200,
+    restSpeedThreshold: 200,
   });
   const goRight = Animated.spring(position, {
     toValue: horizontalDistance,
     useNativeDriver: true,
+    restDisplacementThreshold: 200,
+    restSpeedThreshold: 200,
   });
   // pan responders
   const panResponder = useRef(
